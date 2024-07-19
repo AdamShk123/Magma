@@ -1,0 +1,48 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "environment": {
+        "VCPKG_ROOT": "/home/adam/vcpkg"
+      },
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-linux-dynamic",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "linux-dev",
+      "displayName": "Linux Development Configuration",
+      "description": "Configure with Linux development settings",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/linux-dev"
+    },
+    {
+      "name": "linux-prod",
+      "displayName": "Linux Production Configuration",
+      "description": "Configure with Linux Production settings",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/linux-prod"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "linux-dev",
+      "configurePreset": "linux-dev",
+      "displayName": "Linux Development Build",
+      "description": "Build with Linux development settings"
+    },
+    {
+      "name": "linux-prod",
+      "configurePreset": "linux-prod",
+      "displayName": "Linux Production Build",
+      "description": "Build with Linux production settings"
+    }
+  ]
+}
