@@ -9,6 +9,8 @@
       "features": [
         "libjpeg-turbo"
       ]
-    }
+    },
+    "stb",
+    "glad"
   ]
 }
