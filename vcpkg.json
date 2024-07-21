@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": [
     "fmt",
+    "glad",
     "sdl2",
     {
       "name": "sdl2-image",
@@ -11,6 +12,6 @@
       ]
     },
     "stb",
-    "glad"
+    "gtest"
   ]
 }

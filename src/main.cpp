@@ -1,10 +1,10 @@
 #include "../include/main.hpp"
 
-int main (int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     fmt::println("Hello There!");
 
-    auto game = Game();
+    auto game = Magma::Game();
 
     game.run();
 

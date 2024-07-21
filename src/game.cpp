@@ -1,7 +1,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../include/game.hpp"
 
-void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) 
+namespace Magma {
+
+void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     fmt::rgb color {};
     std::string typeString {};
@@ -48,17 +50,25 @@ void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLs
     fmt::println("{}", output);
 }
 
+std::vector<uint32_t> string_range(uint32_t start, uint32_t end, uint32_t factor)
+{
+    std::vector<uint32_t> list = std::views::iota(start,end)
+            | std::views::transform([factor](auto const item) -> uint32_t { return item * factor; })
+            | std::ranges::to<std::vector<uint32_t>>();
+    return list;
+}
+
 Game::Game()
 {
     init();
 }
 
-Game::~Game() 
+Game::~Game()
 {
     close();
 }
 
-void Game::init() 
+void Game::init()
 {
     if(SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -75,18 +85,18 @@ void Game::init()
     // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
     SDL_DisplayMode dm{};
-    
+
     int success = SDL_GetCurrentDisplayMode(0, &dm);
 
     int width = 1920;
     int height = 1080;
 
-    if(success == 0) 
+    if(success == 0)
     {
         width = dm.w;
         height = dm.h;
     }
-    else 
+    else
     {
         std::string error = SDL_GetError();
         throw std::runtime_error(error.c_str());
@@ -107,7 +117,7 @@ void Game::init()
         throw std::runtime_error(error.c_str());
     }
 
-    if(!gladLoadGLLoader(SDL_GL_GetProcAddress)) 
+    if(!gladLoadGLLoader(SDL_GL_GetProcAddress))
     {
         std::string error = "Failed to initialize GLAD!";
         throw std::runtime_error(error.c_str());
@@ -127,7 +137,7 @@ void Game::init()
     glDebugMessageCallback(messageCallback, nullptr);
 }
 
-void Game::run() 
+void Game::run()
 {
     Shader shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
@@ -174,27 +184,27 @@ void Game::run()
 
         while(SDL_PollEvent(&e) != 0)
         {
-            switch(e.type) 
+            switch(e.type)
             {
-            case SDL_QUIT:
-                quit = true;
-                break;
-            case SDL_WINDOWEVENT:
-                framebufferSizeCallback();
-                break;
-            case SDL_KEYDOWN:
-                switch(e.key.keysym.sym)
-                {
-                    case SDLK_ESCAPE:
-                        quit = true;
-                        break;
-                }
-                break;
-            case SDL_KEYUP:
-                switch (e.key.keysym.sym) 
-                {
-                }
-                break;
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+                case SDL_WINDOWEVENT:
+                    framebufferSizeCallback();
+                    break;
+                case SDL_KEYDOWN:
+                    switch(e.key.keysym.sym)
+                    {
+                        case SDLK_ESCAPE:
+                            quit = true;
+                            break;
+                    }
+                    break;
+                case SDL_KEYUP:
+                    switch (e.key.keysym.sym)
+                    {
+                    }
+                    break;
             }
         }
 
@@ -203,7 +213,7 @@ void Game::run()
 
         // glNamedBufferSubData(VBO, 0, sizeof(vertices), &vertices);
         // glNamedBufferSubData(EBO, 0, sizeof(indices), &indices);
-        
+
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, nullptr);
 
@@ -215,7 +225,7 @@ void Game::run()
     }
 }
 
-void Game::close() 
+void Game::close()
 {
     IMG_Quit();
 
@@ -228,9 +238,13 @@ void Game::close()
     SDL_Quit();
 }
 
-void Game::framebufferSizeCallback() 
+void Game::framebufferSizeCallback()
 {
     int w,h;
     SDL_GetWindowSize(m_window,&w,&h);
     glViewport(0,0,w,h);
 }
+
+}
+
+

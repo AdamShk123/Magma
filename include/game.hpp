@@ -1,8 +1,7 @@
 #ifndef GAME_HPP
 #define GAME_HPP
-#include <glad/glad.h>
 
-#include "./shader.hpp"
+#include <glad/glad.h>
 
 #include <stb_image.h>
 
@@ -24,8 +23,16 @@
 #include <memory>
 #include <unordered_map>
 #include <cstdint>
+#include <ranges>
+#include <vector>
 
-struct Vertex 
+#include "./shader.hpp"
+
+namespace Magma {
+
+std::vector<uint32_t> string_range(uint32_t start, uint32_t end, uint32_t factor = 1);
+
+struct Vertex
 {
     glm::vec3 pos;
     glm::vec3 col;
@@ -33,15 +40,15 @@ struct Vertex
 };
 
 const Vertex vertices[] = {
-    {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
-    {{0.0f, 0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
+        {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
+        {{0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
+        {{0.0f, 0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
 };
 
 const uint32_t indices[] = {
-    0,1,2
+        0,1,2
 };
-    
+
 void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
 class Game
@@ -60,9 +67,11 @@ private:
 public:
     Game();
     ~Game();
-    
+
     void run();
 };
+
+}
 
 #endif
 
