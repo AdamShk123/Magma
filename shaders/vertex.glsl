@@ -4,15 +4,13 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aCol;
 layout (location = 2) in vec2 aTex;
 
-out vec3 bPos;
-out vec3 bCol;
-out vec2 bTex;
+out vec3 attribCol;
+out vec2 attribTex;
 
 void main() 
 {
-    bPos = aPos;
-    bCol = aCol;
-    bTex = aTex;
+    attribCol = aCol;
+    attribTex = aTex;
 
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);
+    gl_Position = vec4(aPos.x, aPos.y * -1, aPos.z, 1.0f);
 }

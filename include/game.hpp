@@ -39,14 +39,22 @@ struct Vertex
     glm::vec2 tex;
 };
 
+struct Texture {
+    uint32_t id;
+    uint32_t w;
+    uint32_t h;
+};
+
 const Vertex vertices[] = {
-        {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
-        {{0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
-        {{0.0f, 0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}},
+        {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+        {{-0.5f, 0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+        {{0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+        {{0.5f, 0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {1.0f, 1.0f}},
 };
 
 const uint32_t indices[] = {
-        0,1,2
+        0,1,2,
+        1,2,3
 };
 
 void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
@@ -62,6 +70,8 @@ private:
 
     void init();
     void close();
+
+    Texture loadTexture(const std::string& path);
     void framebufferSizeCallback();
 
 public:

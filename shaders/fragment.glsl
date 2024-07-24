@@ -1,12 +1,15 @@
 #version 460 core
 
-in vec3 bPos;
-in vec3 bCol;
-in vec2 bTex;
+in vec3 attribCol;
+in vec2 attribTex;
+
+uniform sampler2D texture0;
+uniform sampler2D texture1;
 
 out vec4 FragColor;
 
 void main() 
 {
-    FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    FragColor = mix(texture(texture0, attribTex),
+                    texture(texture1, attribTex), 0.8);
 }

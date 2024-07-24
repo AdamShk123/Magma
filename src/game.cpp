@@ -123,6 +123,12 @@ void Game::init()
         throw std::runtime_error(error.c_str());
     }
 
+//    if(SDL_GL_SetSwapInterval(0) == -1)
+//    {
+//        std::string error = SDL_GetError();
+//        fmt::println("{}", error);
+//    }
+
     auto flags = (IMG_InitFlags)IMG_INIT_JPG | IMG_INIT_PNG;
     auto result = IMG_Init(flags);
     if(result != flags)
@@ -135,6 +141,37 @@ void Game::init()
 
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(messageCallback, nullptr);
+}
+
+Texture Game::loadTexture(const std::string& path) {
+    SDL_Surface *surface = IMG_Load(path.c_str());
+
+    uint32_t id;
+    glCreateTextures(GL_TEXTURE_2D, 1, &id);
+
+    glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    if(surface) {
+        if(surface->format->Amask != 0) {
+            glTextureStorage2D(id, 1, GL_RGBA8, surface->w, surface->h);
+            glTextureSubImage2D(id, 0, 0, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+        }
+        else {
+            glTextureStorage2D(id, 1, GL_RGBA8, surface->w, surface->h);
+            glTextureSubImage2D(id, 0, 0, 0, surface->w, surface->h, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
+        }
+        glGenerateTextureMipmap(id);
+    }
+    else {
+        fmt::println("Failed to load image!");
+    }
+
+    SDL_FreeSurface(surface);
+
+    return Texture(id, surface->w, surface->h);
 }
 
 void Game::run()
@@ -172,6 +209,15 @@ void Game::run()
 
     glVertexArrayElementBuffer(VAO, EBO);
 
+    std::string imagePath = "textures/awesomeface.png";
+    Texture t0 = loadTexture(imagePath);
+
+    imagePath = "textures/container.jpg";
+    Texture t1 = loadTexture(imagePath);
+
+    glBindTextureUnit(0, t0.id);
+    glBindTextureUnit(1, t1.id);
+
     shader.use();
 
     SDL_Event e;
@@ -180,7 +226,7 @@ void Game::run()
 
     while(!quit)
     {
-        auto start_time = SDL_GetTicks();
+        uint32_t start_time = SDL_GetTicks();
 
         while(SDL_PollEvent(&e) != 0)
         {
@@ -211,17 +257,19 @@ void Game::run()
         glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // glNamedBufferSubData(VBO, 0, sizeof(vertices), &vertices);
-        // glNamedBufferSubData(EBO, 0, sizeof(indices), &indices);
+        shader.setInt("texture0", 0);
+        shader.setInt("texture1", 1);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, nullptr);
 
         SDL_GL_SwapWindow(m_window);
 
-        auto stop_time = SDL_GetTicks();
+        uint32_t stop_time = SDL_GetTicks();
 
-        m_delta = (stop_time - start_time) / 1000.0f;
+//        fmt::println("fps: {}", 1.0f / ((float)(stop_time - start_time) / 1000.0f));
+
+        m_delta = (float)(stop_time - start_time) / 1000.0f;
     }
 }
 
