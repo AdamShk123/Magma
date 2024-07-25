@@ -12,7 +12,8 @@
         "libjpeg-turbo"
       ]
     },
+    "sol2",
     "stb",
-    "sol2"
+    "glm"
   ]
 }
