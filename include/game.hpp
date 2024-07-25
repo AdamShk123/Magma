@@ -5,6 +5,9 @@
 
 #include <stb_image.h>
 
+#define SOL_ALL_SAFETIES_ON 1
+#include <sol/sol.hpp>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_events.h>
@@ -14,6 +17,9 @@
 #include <SDL2/SDL_video.h>
 
 #include <glm/glm.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/ext.hpp>
 
 #include <fmt/core.h>
 #include <fmt/color.h>
@@ -45,14 +51,14 @@ struct Texture {
     uint32_t h;
 };
 
-const Vertex vertices[] = {
+const std::vector<Vertex> VERTICES {
         {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {0.0f, 0.0f}},
         {{-0.5f, 0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {0.0f, 1.0f}},
         {{0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {1.0f, 0.0f}},
         {{0.5f, 0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {1.0f, 1.0f}},
 };
 
-const uint32_t indices[] = {
+const std::vector<uint32_t> INDICES {
         0,1,2,
         1,2,3
 };

@@ -176,15 +176,55 @@ Texture Game::loadTexture(const std::string& path) {
 
 void Game::run()
 {
+    sol::state lua;
+
+    try {
+        lua.safe_script_file("src/data.lua");
+    }
+    catch(const std::exception& e) {
+        fmt::println("{}", e.what());
+    }
+
+    std::vector<Vertex> vertices {};
+    std::vector<uint32_t> indices {};
+
+    auto lua_vertices = lua.get<std::optional<sol::table>>("vertices");
+    auto lua_indices = lua.get<std::optional<sol::table>>("indices");
+
+    if(lua_vertices.has_value() && lua_indices.has_value())
+    {
+        for(const auto& pair : lua_vertices.value())
+        {
+            auto vertex_table = pair.second.as<sol::table>();
+            auto pos = vertex_table["pos"];
+            auto col = vertex_table["col"];
+            auto tex = vertex_table["tex"];
+            Vertex v {glm::vec3({pos[1], pos[2], pos[3]}), glm::vec3({col[1], col[2], col[3]}), glm::vec2({tex[1], tex[2]})};
+//            fmt::println("{} {} {}", glm::to_string(v.pos), glm::to_string(v.col), glm::to_string(v.tex));
+            vertices.push_back(v);
+        }
+
+        for(const auto& pair: lua_indices.value())
+        {
+            auto index = pair.second.as<uint32_t>();
+//            fmt::println("{}",index);
+            indices.push_back(index);
+        }
+    }
+    else {
+        vertices = VERTICES;
+        indices = INDICES;
+    }
+
     Shader shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
     uint32_t VAO, VBO, EBO;
 
     glCreateBuffers(1, &VBO);
-    glNamedBufferStorage(VBO, sizeof(vertices), vertices, GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(VBO, vertices.size() * sizeof(Vertex), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
 
     glCreateBuffers(1, &EBO);
-    glNamedBufferStorage(EBO, sizeof(indices), indices, GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(EBO, indices.size() * sizeof(uint32_t), indices.data(), GL_DYNAMIC_STORAGE_BIT);
 
     glCreateVertexArrays(1, &VAO);
 

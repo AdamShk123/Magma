@@ -7,7 +7,7 @@ find_package(SDL2_image CONFIG REQUIRED)
 
 add_executable(tests main.cpp ../src/game.cpp ../src/glad.cpp)
 
-target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main GTest::gmock fmt::fmt SDL2::SDL2 SDL2_image::SDL2_image)
+target_link_libraries(tests PRIVATE GTest::gtest GTest::gtest_main GTest::gmock fmt::fmt SDL2::SDL2 SDL2_image::SDL2_image lua)
 
 include(GoogleTest)
 gtest_discover_tests(tests)

@@ -4,6 +4,7 @@
   "dependencies": [
     "fmt",
     "glad",
+    "gtest",
     "sdl2",
     {
       "name": "sdl2-image",
@@ -12,6 +13,6 @@
       ]
     },
     "stb",
-    "gtest"
+    "sol2"
   ]
 }
