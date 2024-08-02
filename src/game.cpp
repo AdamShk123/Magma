@@ -82,7 +82,7 @@ void Game::init()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
     SDL_DisplayMode dm{};
 
@@ -138,6 +138,8 @@ void Game::init()
     }
 
     glViewport(0,0,width,height);
+
+    glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(messageCallback, nullptr);
@@ -200,14 +202,12 @@ void Game::run()
             auto col = vertex_table["col"];
             auto tex = vertex_table["tex"];
             Vertex v {glm::vec3({pos[1], pos[2], pos[3]}), glm::vec3({col[1], col[2], col[3]}), glm::vec2({tex[1], tex[2]})};
-//            fmt::println("{} {} {}", glm::to_string(v.pos), glm::to_string(v.col), glm::to_string(v.tex));
             vertices.push_back(v);
         }
 
         for(const auto& pair: lua_indices.value())
         {
             auto index = pair.second.as<uint32_t>();
-//            fmt::println("{}",index);
             indices.push_back(index);
         }
     }
@@ -260,6 +260,15 @@ void Game::run()
 
     shader.use();
 
+    auto model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f),
+                        glm::vec3(1.0f, 0.0f, 0.0f));
+
+    auto view = glm::mat4(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 1920.0f / 1200.0f, 0.1f, 100.0f);
+
     SDL_Event e;
 
     bool quit = false;
@@ -300,8 +309,12 @@ void Game::run()
         shader.setInt("texture0", 0);
         shader.setInt("texture1", 1);
 
+        shader.setMat4("model", model);
+        shader.setMat4("view", view);
+        shader.setMat4("proj", proj);
+
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 
         SDL_GL_SwapWindow(m_window);
 

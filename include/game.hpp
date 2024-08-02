@@ -17,9 +17,7 @@
 #include <SDL2/SDL_video.h>
 
 #include <glm/glm.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/ext.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <fmt/core.h>
 #include <fmt/color.h>
@@ -77,7 +75,21 @@ private:
     void init();
     void close();
 
+    /// \details loadTexture receives a string containing
+    /// the path to a texture file in the project,
+    /// which it loads into memory and returns a
+    /// struct of type Texture, containing the ID
+    /// given to the loaded texture and the width
+    /// and height of it.
+    ///
+    /// \param path path to texture file that should be loaded into memory
+    /// \return Texture struct containing ID of loaded texture, width, and height
     Texture loadTexture(const std::string& path);
+
+    /// \details framebufferSizeCallback is used as callback to
+    /// resize viewport upon size change of the window's framebuffer.
+    ///
+    /// \return none
     void framebufferSizeCallback();
 
 public:

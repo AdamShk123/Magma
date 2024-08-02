@@ -1,0 +1,16 @@
+create-container:
+  script:
+    - echo "create-container"
+
+test:
+  script:
+    - echo "test"
+
+build:
+  script:
+    - echo "build"
+
+stages:
+  - create-container
+  - test
+  - build
