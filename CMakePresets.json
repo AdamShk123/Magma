@@ -6,14 +6,8 @@
       "hidden": true,
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/build",
-      "environment": {
-        "VCPKG_ROOT": "/home/adam/vcpkg"
-      },
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VCPKG_TARGET_TRIPLET": "x64-linux-dynamic",
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++"
+        "VCPKG_TARGET_TRIPLET": "x64-linux-dynamic"
       }
     },
     {

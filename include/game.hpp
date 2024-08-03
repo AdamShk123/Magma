@@ -3,8 +3,6 @@
 
 #include <glad/glad.h>
 
-#include <stb_image.h>
-
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
