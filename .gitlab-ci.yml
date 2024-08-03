@@ -8,8 +8,16 @@ build_image:
   image: archlinux:latest
   script:
     - pacman -Syu
-    - pacman -S docker
-    - docker build -t archlinux:latest .
+    - pacman -S curl
+    - pacman -S zip
+    - pacman -S git
+    - pacman -S make
+    - pacman -S cmake
+    - git clone https://github.com/microsoft/vcpkg.git
+    - cd vcpkg
+    - ./bootstrap-vcpkg.sh
+    - export VCPKG_ROOT=$(pwd)
+    - export PATH=$VCPKG_ROOT:/bin
 
 test:
   stage: test
