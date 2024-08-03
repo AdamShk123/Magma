@@ -22,9 +22,17 @@ build_image:
 test:
   stage: test
   script:
-    - echo "test"
+    - cmake --preset linux-dev
+    - make build/linux-dev/tests/
+    - ./build/linux-dev/tests/tests
+  artifacts:
+    paths:
+      - "build/"
 
 build:
   stage: build
   script:
-    - echo "build"
+    - make build/linux-dev/src/
+  artifacts:
+    paths:
+      - "build/"
