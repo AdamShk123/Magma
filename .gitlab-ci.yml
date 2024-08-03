@@ -7,7 +7,7 @@ build_image:
   stage: build_image
   image: archlinux:latest
   script:
-    - pacman -Sy
+    - pacman -Syu
     - pacman -S docker
     - docker build -t archlinux:latest .
 
