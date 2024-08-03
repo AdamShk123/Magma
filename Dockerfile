@@ -6,7 +6,8 @@ RUN apt update && \
     apt install -y git && \
     apt install -y make && \
     apt install -y cmake && \
-    apt install -y g++
+    apt install -y g++ && \
+    apt install -y pkg-config
 
 WORKDIR /home
 
