@@ -1,20 +1,15 @@
 FROM debian:latest
-LABEL Name="Magma" Version="1.0.0"
-
-WORKDIR /usr/local/app
 
 RUN apt update && \
     apt install -y curl && \
     apt install -y zip && \
     apt install -y git && \
     apt install -y make && \
-    apt install -y cmake && \
-    git clone https://github.com/microsoft/vcpkg.git && \
-    cd vcpkg && \
-    ./bootstrap-vcpkg.sh && \
-    export VCPKG_ROOT=$(pwd) && \
-    export PATH=$VCPKG_ROOT:/bin
+    apt install -y cmake
 
-COPY . .
+WORKDIR /home
 
-CMD ["echo 'lol'"]
+RUN git clone https://github.com/microsoft/vcpkg.git && \
+    ./vcpkg/bootstrap-vcpkg.sh && \
+    export VCPKG_ROOT=$(pwd)/vcpkg && \
+    export PATH=$VCPKG_ROOT:$PATH

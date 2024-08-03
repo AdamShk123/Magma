@@ -5,21 +5,19 @@ stages:
 
 build_image:
   stage: build_image
-  image: debian:latest
+  image: docker
+  services:
+    - docker:dind
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
   script:
-    - apt update
-    - apt install -y curl
-    - apt install -y zip
-    - apt install -y git
-    - apt install -y make
-    - apt install -y cmake
-    - git clone https://github.com/microsoft/vcpkg.git
-    - cd vcpkg
-    - ./bootstrap-vcpkg.sh
-    - export VCPKG_ROOT=$(pwd)
-    - export PATH=$VCPKG_ROOT:/bin
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - echo $CI_REGISTRY_IMAGE
+    - docker push $CI_REGISTRY_IMAGE
 
 test:
+  image: $CI_REGISTRY_IMAGE
   stage: test
   script:
     - cmake --preset linux-dev
