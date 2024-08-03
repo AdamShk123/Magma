@@ -1,3 +1,8 @@
+stages:
+  - build_image
+  - test
+  - build
+
 build_image:
   stage: build-image
   image: debian:latest
@@ -13,8 +18,3 @@ build:
   stage: build
   script:
     - echo "build"
-
-stages:
-  - build_image
-  - test
-  - build
