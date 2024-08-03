@@ -5,10 +5,9 @@ stages:
 
 build_image:
   stage: build_image
-  image: debian:latest
   script:
     - apt install -y docker
-    - docker build -t debian:latest .
+    - docker build -t archlinux:latest .
 
 test:
   stage: test

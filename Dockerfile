@@ -1,14 +1,14 @@
-FROM debian:latest
+FROM archlinux:latest
 LABEL Name="Magma" Version="1.0.0"
 
 WORKDIR /usr/local/app
 
-RUN apt update && \
-    apt install -y curl && \
-    apt install -y zip && \
-    apt install -y git && \
-    apt install -y make && \
-    apt install -y cmake && \
+RUN pacman -Syu && \
+    pacman -S curl && \
+    pacman -S zip && \
+    pacman -S git && \
+    pacman -S make && \
+    pacman -S cmake && \
     git clone https://github.com/microsoft/vcpkg.git && \
     cd vcpkg && \
     ./bootstrap-vcpkg.sh && \
