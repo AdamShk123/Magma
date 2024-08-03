@@ -7,7 +7,7 @@ build_image:
   stage: build_image
   image: archlinux:latest
   script:
-    - pacman -Syu
+    - pacman -Sy
     - pacman -S curl
     - pacman -S zip
     - pacman -S git
