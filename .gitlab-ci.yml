@@ -4,7 +4,7 @@ stages:
   - build
 
 build_image:
-  stage: build-image
+  stage: build_image
   image: debian:latest
   script:
     - docker build -t debian:latest .
