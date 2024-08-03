@@ -8,6 +8,9 @@ RUN apt update && \
     apt install -y cmake && \
     apt install -y g++ && \
     apt install -y python3 && \
+    apt install -y autoconf && \
+    apt install -y automake && \
+    apt install -y libtool && \
     apt install -y pkg-config
 
 WORKDIR /home
