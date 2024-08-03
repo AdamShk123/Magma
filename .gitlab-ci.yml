@@ -21,7 +21,7 @@ test:
   stage: test
   script:
     - cmake --preset linux-dev
-    - make build/linux-dev/tests/
+    - make -f build/linux-dev/tests/Makefile
     - ./build/linux-dev/tests/tests
   artifacts:
     paths:
@@ -30,7 +30,7 @@ test:
 build:
   stage: build
   script:
-    - make build/linux-dev/src/
+    - make -f build/linux-dev/src/Makefile
   artifacts:
     paths:
       - "build/"
