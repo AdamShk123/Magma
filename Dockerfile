@@ -14,3 +14,6 @@ RUN git clone https://github.com/microsoft/vcpkg.git && \
     ./vcpkg/bootstrap-vcpkg.sh && \
     export VCPKG_ROOT=/home/vcpkg && \
     export PATH=$VCPKG_ROOT:$PATH
+
+ENV VCPKG_ROOT=/home/vcpkg
+ENV PATH=$VCPKG_ROOT:$PATH
