@@ -5,7 +5,8 @@ RUN apt update && \
     apt install -y zip && \
     apt install -y git && \
     apt install -y make && \
-    apt install -y cmake
+    apt install -y cmake && \
+    apt install -y g++
 
 WORKDIR /home
 
