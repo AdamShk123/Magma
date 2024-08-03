@@ -7,7 +7,7 @@ build_image:
   stage: build_image
   image: debian:latest
   script:
-    - apt update -Sy
+    - apt update
     - apt install -y curl
     - apt install -y zip
     - apt install -y git
