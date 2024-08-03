@@ -5,8 +5,9 @@ stages:
 
 build_image:
   stage: build_image
+  image: archlinux:latest
   script:
-    - apt install -y docker
+    - pacman -S docker
     - docker build -t archlinux:latest .
 
 test:
