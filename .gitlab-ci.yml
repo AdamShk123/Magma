@@ -1,11 +1,20 @@
-create-container:
+build_image:
+  stage: build-image
+  image: debian:latest
   script:
-    - echo "create-container"
+    - docker build -t debian:latest .
 
 test:
+  stage: test
   script:
     - echo "test"
 
 build:
+  stage: build
   script:
     - echo "build"
+
+stages:
+  - build_image
+  - test
+  - build
