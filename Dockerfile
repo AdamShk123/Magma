@@ -12,5 +12,5 @@ WORKDIR /home
 
 RUN git clone https://github.com/microsoft/vcpkg.git && \
     ./vcpkg/bootstrap-vcpkg.sh && \
-    export VCPKG_ROOT=$(pwd)/vcpkg && \
+    export VCPKG_ROOT=/home/vcpkg && \
     export PATH=$VCPKG_ROOT:$PATH

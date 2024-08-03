@@ -20,6 +20,7 @@ test:
   image: $CI_REGISTRY_IMAGE
   stage: test
   script:
+    - echo $VCPKG_ROOT
     - cmake --preset linux-dev
     - make -f build/linux-dev/tests/Makefile
     - ./build/linux-dev/tests/tests
