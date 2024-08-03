@@ -5,14 +5,14 @@ stages:
 
 build_image:
   stage: build_image
-  image: archlinux:latest
+  image: debian:latest
   script:
-    - pacman -Sy
-    - pacman -S curl
-    - pacman -S zip
-    - pacman -S git
-    - pacman -S make
-    - pacman -S cmake
+    - apt update -Sy
+    - apt install -y curl
+    - apt install -y zip
+    - apt install -y git
+    - apt install -y make
+    - apt install -y cmake
     - git clone https://github.com/microsoft/vcpkg.git
     - cd vcpkg
     - ./bootstrap-vcpkg.sh
