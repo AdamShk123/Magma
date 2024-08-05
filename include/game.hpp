@@ -9,7 +9,6 @@
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
-#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 
@@ -29,24 +28,12 @@
 #include <optional>
 
 #include "./shader.hpp"
+#include "./window.hpp"
+#include "./structs.hpp"
 
 namespace Magma {
 
 #define RGBA 4
-
-struct Vertex
-{
-    glm::vec3 pos;
-    glm::vec3 col;
-    glm::vec2 tex;
-};
-
-struct Texture {
-    uint32_t id;
-    uint32_t w;
-    uint32_t h;
-    bool alpha;
-};
 
 const std::vector<Vertex> VERTICES {
         {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.0f, 0.0f}, {0.0f, 0.0f}},
@@ -73,29 +60,15 @@ void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLs
 /// \return Texture struct containing ID of loaded texture, width, and height
 std::optional<Texture> loadTexture(const std::string& path);
 
+std::optional<std::string> initMagma();
+void enableGLDebugOutput();
+
 class Game
 {
 private:
-    SDL_Window *m_window = nullptr;
-
-    SDL_GLContext m_context = nullptr;
-
     float m_delta = 0.0f;
 
-    std::optional<std::string> initSDL();
-    std::optional<SDL_DisplayMode> getDisplaySize();
-    std::optional<std::string> initWindow(const SDL_DisplayMode& dm);
-    std::optional<std::string> initGLContext();
-    std::optional<std::string> initGLAD();
-
-    void close();
-
-    /// \details framebufferSizeCallback is used as callback to
-    /// resize viewport upon size change of the window's framebuffer.
-    ///
-    /// \return none
-    void framebufferSizeCallback();
-
+    Window m_window;
 public:
     Game();
     ~Game();

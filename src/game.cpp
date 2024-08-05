@@ -3,6 +3,16 @@
 
 namespace Magma {
 
+std::optional<std::string> initSDL()
+{
+    return SDL_Init(SDL_INIT_VIDEO) < 0 ? std::optional<std::string>(SDL_GetError()) : std::nullopt;
+};
+
+std::optional<std::string> initGLAD()
+{
+    return !gladLoadGLLoader(SDL_GL_GetProcAddress) ? std::optional<std::string>(SDL_GetError()) : std::nullopt;
+};
+
 void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     fmt::rgb color {};
@@ -50,99 +60,43 @@ void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLs
     fmt::println("{}", output);
 }
 
-Game::Game()
+void enableGLDebugOutput()
 {
-    std::optional<std::string> initSDL_success = initSDL();
-    if(initSDL_success.has_value())
-    {
-        throw std::runtime_error(initSDL_success.value());
-    }
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(messageCallback, nullptr);
+}
 
-    std::optional<SDL_DisplayMode> dm = getDisplaySize();
-    if(!dm.has_value())
-    {
-        throw std::runtime_error(SDL_GetError());
-    }
-
-    std::optional<std::string> initWindow_success = initWindow(dm.value());
-    if(initWindow_success.has_value())
-    {
-        throw std::runtime_error(initWindow_success.value());
-    }
-
-    std::optional<std::string> initGLContext_success = initGLContext();
-    if(initGLContext_success.has_value())
-    {
-        throw std::runtime_error(initGLContext_success.value());
-    }
-
+Game::Game() : m_window()
+{
     std::optional<std::string> initGLAD_success = initGLAD();
     if(initGLAD_success.has_value())
     {
-        throw std::runtime_error(initGLAD_success.value());
+        fmt::println("{}", initGLAD_success.value());
     }
-
 //    if(SDL_GL_SetSwapInterval(0) == -1)
 //    {
 //        std::string error = SDL_GetError();
 //        fmt::println("{}", error);
 //    }
-
-    glViewport(0,0,dm->w,dm->h);
-
-    glEnable(GL_DEPTH_TEST);
-
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(messageCallback, nullptr);
 }
 
 Game::~Game()
 {
-    close();
+    SDL_Quit();
 }
 
-std::optional<std::string> Game::initSDL()
+std::optional<std::string> initMagma()
 {
-    return SDL_Init(SDL_INIT_VIDEO) < 0 ? std::optional<std::string>(SDL_GetError()) : std::nullopt;
+    std::optional<std::string> initSDL_success = initSDL();
+    if(initSDL_success.has_value())
+    {
+        return initSDL_success;
+    }
+    return std::nullopt;
 }
 
-std::optional<SDL_DisplayMode> Game::getDisplaySize()
+std::optional<Texture> loadTexture(const std::string& path)
 {
-    SDL_DisplayMode dm{};
-
-    int success = SDL_GetCurrentDisplayMode(0, &dm);
-
-    return success == 0 ? std::optional<SDL_DisplayMode>(dm) : std::nullopt;
-}
-
-std::optional<std::string> Game::initWindow(const SDL_DisplayMode& dm)
-{
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-
-    auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
-    m_window = SDL_CreateWindow("Frozen Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w, dm.h, window_flags);
-
-    return m_window ? std::nullopt : std::optional<std::string>(SDL_GetError());
-}
-
-std::optional<std::string> Game::initGLContext()
-{
-    m_context = SDL_GL_CreateContext(m_window);
-    return m_context ? std::nullopt : std::optional<std::string>(SDL_GetError());
-}
-
-std::optional<std::string> Game::initGLAD()
-{
-    return !gladLoadGLLoader(SDL_GL_GetProcAddress) ? std::optional<std::string>(SDL_GetError()) : std::nullopt;
-}
-
-std::optional<Texture> loadTexture(const std::string& path) {
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true);
 
@@ -182,6 +136,8 @@ std::optional<Texture> loadTexture(const std::string& path) {
 
 void Game::run()
 {
+    glEnable(GL_DEPTH_TEST);
+
     std::vector<Vertex> vertices {};
     std::vector<uint32_t> indices {};
 
@@ -257,7 +213,7 @@ void Game::run()
                     quit = true;
                     break;
                 case SDL_WINDOWEVENT:
-                    framebufferSizeCallback();
+                    m_window.refreshViewport();
                     break;
                 case SDL_KEYDOWN:
                     switch(e.key.keysym.sym)
@@ -288,7 +244,7 @@ void Game::run()
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr);
 
-        SDL_GL_SwapWindow(m_window);
+        m_window.swapWindow();
 
         uint32_t stop_time = SDL_GetTicks();
 
@@ -296,24 +252,6 @@ void Game::run()
 
         m_delta = (float)(stop_time - start_time) / 1000.0f;
     }
-}
-
-void Game::close()
-{
-    SDL_GL_DeleteContext(m_context);
-    m_context = nullptr;
-
-    SDL_DestroyWindow(m_window);
-    m_window = nullptr;
-
-    SDL_Quit();
-}
-
-void Game::framebufferSizeCallback()
-{
-    int w,h;
-    SDL_GetWindowSize(m_window,&w,&h);
-    glViewport(0,0,w,h);
 }
 
 }
