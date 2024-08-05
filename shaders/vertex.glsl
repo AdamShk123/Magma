@@ -16,5 +16,5 @@ void main()
     attribCol = aCol;
     attribTex = aTex;
 
-    gl_Position = proj * view * model * vec4(aPos.x, aPos.y * -1, aPos.z, 1.0f);
+    gl_Position = proj * view * model * vec4(aPos, 1.0f);
 }

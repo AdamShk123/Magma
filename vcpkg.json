@@ -6,13 +6,6 @@
     "glad",
     "gtest",
     "sdl2",
-    {
-      "name": "sdl2-image",
-      "features": [
-        "libjpeg-turbo"
-      ]
-    },
-    "sol2",
     "stb",
     "glm"
   ]

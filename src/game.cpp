@@ -50,77 +50,36 @@ void messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLs
     fmt::println("{}", output);
 }
 
-std::vector<uint32_t> string_range(uint32_t start, uint32_t end, uint32_t factor)
-{
-    std::vector<uint32_t> list = std::views::iota(start,end)
-            | std::views::transform([factor](auto const item) -> uint32_t { return item * factor; })
-            | std::ranges::to<std::vector<uint32_t>>();
-    return list;
-}
-
 Game::Game()
 {
-    init();
-}
-
-Game::~Game()
-{
-    close();
-}
-
-void Game::init()
-{
-    if(SDL_Init(SDL_INIT_VIDEO) < 0)
+    std::optional<std::string> initSDL_success = initSDL();
+    if(initSDL_success.has_value())
     {
-        std::string error = SDL_GetError();
-        throw std::runtime_error(error.c_str());
+        throw std::runtime_error(initSDL_success.value());
     }
 
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-
-    SDL_DisplayMode dm{};
-
-    int success = SDL_GetCurrentDisplayMode(0, &dm);
-
-    int width = 1920;
-    int height = 1080;
-
-    if(success == 0)
+    std::optional<SDL_DisplayMode> dm = getDisplaySize();
+    if(!dm.has_value())
     {
-        width = dm.w;
-        height = dm.h;
-    }
-    else
-    {
-        std::string error = SDL_GetError();
-        throw std::runtime_error(error.c_str());
+        throw std::runtime_error(SDL_GetError());
     }
 
-    auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
-    m_window = SDL_CreateWindow("Frozen Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, window_flags);
-    if(!m_window)
+    std::optional<std::string> initWindow_success = initWindow(dm.value());
+    if(initWindow_success.has_value())
     {
-        std::string error = SDL_GetError();
-        throw std::runtime_error(error.c_str());
+        throw std::runtime_error(initWindow_success.value());
     }
 
-    m_context = SDL_GL_CreateContext(m_window);
-    if(!m_context)
+    std::optional<std::string> initGLContext_success = initGLContext();
+    if(initGLContext_success.has_value())
     {
-        std::string error = SDL_GetError();
-        throw std::runtime_error(error.c_str());
+        throw std::runtime_error(initGLContext_success.value());
     }
 
-    if(!gladLoadGLLoader(SDL_GL_GetProcAddress))
+    std::optional<std::string> initGLAD_success = initGLAD();
+    if(initGLAD_success.has_value())
     {
-        std::string error = "Failed to initialize GLAD!";
-        throw std::runtime_error(error.c_str());
+        throw std::runtime_error(initGLAD_success.value());
     }
 
 //    if(SDL_GL_SetSwapInterval(0) == -1)
@@ -129,15 +88,7 @@ void Game::init()
 //        fmt::println("{}", error);
 //    }
 
-    auto flags = (IMG_InitFlags)IMG_INIT_JPG | IMG_INIT_PNG;
-    auto result = IMG_Init(flags);
-    if(result != flags)
-    {
-        std::string error = IMG_GetError();
-        throw std::runtime_error(error.c_str());
-    }
-
-    glViewport(0,0,width,height);
+    glViewport(0,0,dm->w,dm->h);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -145,76 +96,97 @@ void Game::init()
     glDebugMessageCallback(messageCallback, nullptr);
 }
 
-Texture Game::loadTexture(const std::string& path) {
-    SDL_Surface *surface = IMG_Load(path.c_str());
+Game::~Game()
+{
+    close();
+}
+
+std::optional<std::string> Game::initSDL()
+{
+    return SDL_Init(SDL_INIT_VIDEO) < 0 ? std::optional<std::string>(SDL_GetError()) : std::nullopt;
+}
+
+std::optional<SDL_DisplayMode> Game::getDisplaySize()
+{
+    SDL_DisplayMode dm{};
+
+    int success = SDL_GetCurrentDisplayMode(0, &dm);
+
+    return success == 0 ? std::optional<SDL_DisplayMode>(dm) : std::nullopt;
+}
+
+std::optional<std::string> Game::initWindow(const SDL_DisplayMode& dm)
+{
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+
+    auto window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
+    m_window = SDL_CreateWindow("Frozen Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w, dm.h, window_flags);
+
+    return m_window ? std::nullopt : std::optional<std::string>(SDL_GetError());
+}
+
+std::optional<std::string> Game::initGLContext()
+{
+    m_context = SDL_GL_CreateContext(m_window);
+    return m_context ? std::nullopt : std::optional<std::string>(SDL_GetError());
+}
+
+std::optional<std::string> Game::initGLAD()
+{
+    return !gladLoadGLLoader(SDL_GL_GetProcAddress) ? std::optional<std::string>(SDL_GetError()) : std::nullopt;
+}
+
+std::optional<Texture> loadTexture(const std::string& path) {
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
+
+    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+
+    bool alpha = nrChannels == RGBA;
 
     uint32_t id;
     glCreateTextures(GL_TEXTURE_2D, 1, &id);
 
-    glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    if(data)
+    {
+        glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    if(surface) {
-        if(surface->format->Amask != 0) {
-            glTextureStorage2D(id, 1, GL_RGBA8, surface->w, surface->h);
-            glTextureSubImage2D(id, 0, 0, 0, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+        if (alpha)
+        {
+            glTextureStorage2D(id, 1, GL_RGBA8, width, height);
+            glTextureSubImage2D(id, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
         }
-        else {
-            glTextureStorage2D(id, 1, GL_RGBA8, surface->w, surface->h);
-            glTextureSubImage2D(id, 0, 0, 0, surface->w, surface->h, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
+        else
+        {
+            glTextureStorage2D(id, 1, GL_RGBA8, width, height);
+            glTextureSubImage2D(id, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
         }
+
         glGenerateTextureMipmap(id);
-    }
-    else {
-        fmt::println("Failed to load image!");
-    }
 
-    SDL_FreeSurface(surface);
+        stbi_image_free(data);
 
-    return Texture(id, surface->w, surface->h);
+        return Texture {id, static_cast<uint32_t>(width), static_cast<uint32_t>(height), alpha};
+    }
+    return std::nullopt;
 }
 
 void Game::run()
 {
-    sol::state lua;
-
-    try {
-        lua.safe_script_file("src/data.lua");
-    }
-    catch(const std::exception& e) {
-        fmt::println("{}", e.what());
-    }
-
     std::vector<Vertex> vertices {};
     std::vector<uint32_t> indices {};
 
-    auto lua_vertices = lua.get<std::optional<sol::table>>("vertices");
-    auto lua_indices = lua.get<std::optional<sol::table>>("indices");
-
-    if(lua_vertices.has_value() && lua_indices.has_value())
-    {
-        for(const auto& pair : lua_vertices.value())
-        {
-            auto vertex_table = pair.second.as<sol::table>();
-            auto pos = vertex_table["pos"];
-            auto col = vertex_table["col"];
-            auto tex = vertex_table["tex"];
-            Vertex v {glm::vec3({pos[1], pos[2], pos[3]}), glm::vec3({col[1], col[2], col[3]}), glm::vec2({tex[1], tex[2]})};
-            vertices.push_back(v);
-        }
-
-        for(const auto& pair: lua_indices.value())
-        {
-            auto index = pair.second.as<uint32_t>();
-            indices.push_back(index);
-        }
-    }
-    else {
-        vertices = VERTICES;
-        indices = INDICES;
-    }
+    vertices = VERTICES;
+    indices = INDICES;
 
     Shader shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
@@ -250,13 +222,13 @@ void Game::run()
     glVertexArrayElementBuffer(VAO, EBO);
 
     std::string imagePath = "textures/awesomeface.png";
-    Texture t0 = loadTexture(imagePath);
+    std::optional<Texture> t0 = loadTexture(imagePath);
 
     imagePath = "textures/container.jpg";
-    Texture t1 = loadTexture(imagePath);
+    std::optional<Texture> t1 = loadTexture(imagePath);
 
-    glBindTextureUnit(0, t0.id);
-    glBindTextureUnit(1, t1.id);
+    glBindTextureUnit(0, t0->id);
+    glBindTextureUnit(1, t1->id);
 
     shader.use();
 
@@ -328,8 +300,6 @@ void Game::run()
 
 void Game::close()
 {
-    IMG_Quit();
-
     SDL_GL_DeleteContext(m_context);
     m_context = nullptr;
 
